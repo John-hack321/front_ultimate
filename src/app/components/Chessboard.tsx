@@ -295,5 +295,11 @@ export default function chessGame () {
         <Chessboard options = {chessboardOptions}/>
       </div>
     </div>
+    
   )
+<<<<<<< HEAD
 }
+=======
+}
+// implementing the onClick functinality for the squares 
+>>>>>>> origin/master

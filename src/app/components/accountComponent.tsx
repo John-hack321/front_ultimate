@@ -2,7 +2,8 @@
 
 interface AccountBalanceProps {
     balance: number
-}
+}// tesing cli
+
 
 export default function AccountBalance( {balance} : AccountBalanceProps ){
 

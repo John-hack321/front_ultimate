@@ -98,3 +98,4 @@ function chess_match_page() {
 }
 
 export default chess_match_page;
+
