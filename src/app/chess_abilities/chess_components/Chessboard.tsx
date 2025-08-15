@@ -344,5 +344,11 @@ export default function chessGame () {
         <Chessboard options = {whiteChessboardOptions}/>
       </div>
     </div>
+    
   )
+<<<<<<< HEAD:src/app/chess_abilities/chess_components/Chessboard.tsx
 }
+=======
+}
+// implementing the onClick functinality for the squares 
+>>>>>>> origin/master:src/app/components/Chessboard.tsx

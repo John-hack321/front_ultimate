@@ -120,6 +120,7 @@ function ChessMatch() {
     )
 }
 
+<<<<<<< HEAD
 export default function ChessMatchPage() {
     return (
         <ProtectedRoute>
@@ -128,3 +129,7 @@ export default function ChessMatchPage() {
     )
 }
 // note : in typescript tsx all componet names must start with an uppercase letter
+=======
+export default chess_match_page;
+
+>>>>>>> origin/master
