@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState , useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { signInFormValues, signInSchema } from "../schemas/auth";
 
 
@@ -128,7 +129,7 @@ export default function SignInPage(){
                         ("sign in") }
                         </button>
                         <div className = "text-center">
-                            <span className = "text-gray-700 text-sm">Don't have an account?
+                            <span className = "text-gray-700 text-sm">Don&apos;t have an account?
                                 <a href="/signup" className = "ml-2 underline text-blue">Sign Up</a>
                             </span>
                         </div>
@@ -141,7 +142,14 @@ export default function SignInPage(){
             <div className = "hidden h-full rounded-3xl bg-gradient-to-b from-indigo-100 via-purple-100 to-[#5960d7] lg:block ">
                 <div className = 'flex h-full flex-col p-12 '>
                     <div className = "flex h-full items-center justify-center">
-                        <img src="/cod_actual.png" alt="" className = "rounded-lg  hover:opacity-100 " />
+                        <Image 
+                          src="/cod_actual.png" 
+                          alt="Chess game illustration" 
+                          width={500} 
+                          height={500}
+                          className="rounded-lg hover:opacity-100"
+                          priority
+                        />
                         </div>
                         <div className = "w-full max-w-lg h-fit  p-2">
                             <div className = "mb-3 flex bg-indigo-100 w-fit rounded-2xl bg-opacity-40 px-3 py-1 ">
