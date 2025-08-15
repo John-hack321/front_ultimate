@@ -3,7 +3,7 @@ import { Chess } from "chess.js"
 import { Chessboard, PieceDropHandlerArgs } from "react-chessboard"
 import { useRef, useState } from "react"
 
-export default function board() {
+export default function Board() {
 
     const chessGameRef = useRef(new Chess());
     const chessGame = chessGameRef.current;
