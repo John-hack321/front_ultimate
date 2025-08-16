@@ -88,14 +88,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password,
         }
 
-        const response = await axios.post('http://localhost:8000/auth/' , payload , {
+        console.log(`payload constructed with data ${payload} now awaiting forwarding to the respective endpoint`)
+
+        const API_BASE_URL = process.env.BACKEND_BASE_URL || 'http://localhost:8000';
+        const response = await axios.post(`${API_BASE_URL}/auth/`, payload, {
           headers : {
             'Content-Type' : 'application/json',
             'Accept' : 'application/json',
           }
         })
 
+        console.log(`the payload has been sent successfuly , now awaiting access token from the backend`)
+
       const accessToken = response.data.access_token;
+      console.log(`the access token has been received`)
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       localStorage.setItem('token' , accessToken);
       // now after the saving the access token in local storage we also need to store the current user in local storage 
