@@ -16,7 +16,7 @@ type AuthContextType = { // here we get o define what data or function the auth 
   login: ( username : string , password: string) => Promise<void>;
   logout: () => void;
   loading : boolean;
-  signup : ( username : string , email : string ,phone : number ,  password : string ) => Promise<void>;
+  signup : (username: string, email: string, phone: string, password: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined); // the create context is used to create a context to share data accross our app ie. the logged in user 
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuthStatus();
   }, []);
 
-  const signup = async ( username : string , email : string ,phone : number ,  password : string ) => {
+  const signup = async ( username : string , email : string ,phone : string ,  password : string ) => {
     try { // now we are going to define what happens on click of the sign up button 
       // since this time our data is going to be sent as payload rather than form data we are not going to use this for now 
     {/*
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       formData.append('email' , email);
       console.log('the user signup data is now being sent to the fast api backend ');
       */}
-      const str_phone = phone.toString()
+      const str_phone = phone
       const payload = {
         username,
         email,
