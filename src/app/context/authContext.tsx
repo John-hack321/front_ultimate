@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.log(`payload constructed with data ${payload} now awaiting forwarding to the respective endpoint`)
 
         const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8000';
-        const response = await axios.post(`${API_BASE_URL}/auth/`, payload, {
+        const response = await axios.post(`${API_BASE_URL}/auth`, payload, {
           headers : {
             'Content-Type' : 'application/json',
             'Accept' : 'application/json',
