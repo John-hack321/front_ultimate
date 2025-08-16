@@ -1,6 +1,6 @@
 // src/app/api/users.ts
 import axios from 'axios';
-const API_BASE_URL = process.env.BACKEND_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8000';
 
 /**
  * Fetches the authenticated user's profile data from the backend
