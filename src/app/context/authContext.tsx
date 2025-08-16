@@ -80,11 +80,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       formData.append('email' , email);
       console.log('the user signup data is now being sent to the fast api backend ');
       */}
-      const str_phone = phone
+
       const payload = {
         username,
         email,
-        str_phone,
+        phone,
         password,
         }
 
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       const accessToken = response.data.access_token;
       console.log(`the access token has been received`)
-      
+
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       localStorage.setItem('token' , accessToken);
       // now after the saving the access token in local storage we also need to store the current user in local storage 
