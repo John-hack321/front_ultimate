@@ -1,137 +1,160 @@
 'use client'
-import { Chessboard, PieceDropHandlerArgs } from "react-chessboard";
-import { Chess } from "chess.js";
-import { useRef, useState, useEffect } from "react";
-import { socket } from "../test_socket_page/page";
+import {Chessboard, PieceDropHandlerArgs, PieceHandlerArgs} from "react-chessboard"
+import { Chess } from "chess.js"
+import { useRef , useState , useMemo , useEffect } from "react"
+import { generateRandomMoveFen } from "../chess_abilities/chessConfigurations/generalChessConfigs"
+import {socket} from "../test_socket_page/page";
+import { Span } from "next/dist/trace"
 
-interface Move {
-    sid: string;
-    move: string;
+type Square = 'a1' | 'a2' | 'a3' | 'a4' | 'a5' | 'a6' | 'a7' | 'a8' |
+              'b1' | 'b2' | 'b3' | 'b4' | 'b5' | 'b6' | 'b7' | 'b8' |
+              'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' |
+              'd1' | 'd2' | 'd3' | 'd4' | 'd5' | 'd6' | 'd7' | 'd8' |
+              'e1' | 'e2' | 'e3' | 'e4' | 'e5' | 'e6' | 'e7' | 'e8' |
+              'f1' | 'f2' | 'f3' | 'f4' | 'f5' | 'f6' | 'f7' | 'f8' |
+              'g1' | 'g2' | 'g3' | 'g4' | 'g5' | 'g6' | 'g7' | 'g8' |
+              'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7' | 'h8';
+
+type Move = {
+    'sid' : string,
+    'move' : string,
 }
 
-export default function TwoPlayerChess() {
-    const chessGameRef = useRef(new Chess());
+
+export default function twoPlayerChess () {
+
+    const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current;
 
-    const [chessPosition, setChessPosition] = useState(chessGame.fen());
-    const [isConnected, setIsConnected] = useState(socket.connected);
-    const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
-    const [moves, setMoves] = useState<string[]>([]);
+    const [chessPosition , setChessPosition] = useState(chessGame.fen());
+    const [moveFrom , setMoveFrom] = useState('');
+    const [optionSquares , setOptionSquares] = useState({});
+    const [playAsWhite , setPlayAsWhite] = useState(true);
+    const [isConnectd , setIsConnected] = useState(socket.connected);
+    const [foreignGameState , setForeignGameState] = useState('');
+    const [fenString , setFenString] = useState('');
+
+    socket.on('make_move' , (data : Move) => {
+        console.log(`the move has been made by ${data.sid} and the move received is ${data.move}`)
+        console.log(`this is the game state before : ${chessGame.fen()}`)
+        const previousGameState = chessGame.fen()
+        setForeignGameState(data.move);
+        chessGame.move(data.move);
+        console.log(`the new game state after the move is : ${chessGame.fen()}`)
+        console.log(`so has the game state actualy changed ? : lets compare ${previousGameState === chessGame.fen()}`)
+        setChessPosition(data.move)
+    })
+    
 
     useEffect(() => {
-        const onConnect = () => setIsConnected(true);
-        const onDisconnect = () => setIsConnected(false);
-        const onMakeMove = (data: Move) => {
-            try {
-                const move = chessGame.move(data.move);
-                if (move) {
-                    setChessPosition(chessGame.fen());
-                    setMoves(prevMoves => [...prevMoves, move.san]);
-                } else {
-                    console.error('Invalid move received:', data.move);
-                }
-            } catch (error) {
-                console.error('Error applying received move:', error);
-            }
-        };
 
-        socket.on('connect', onConnect);
-        socket.on('disconnect', onDisconnect);
-        socket.on('make_move', onMakeMove);
+        
+        
+        socket.on('connect' , () => {
+            setIsConnected(socket.connected)
+        })
 
-        return () => {
-            socket.off('connect', onConnect);
-            socket.off('disconnect', onDisconnect);
-            socket.off('make_move', onMakeMove);
-        };
-    }, [chessGame]);
+        // socket.on('disconnect' , () => {
+        //    setIsConnected(socket.connected)
+        // })
 
-    const handleChessPieceMove = (moveNotation: string) => {
-        socket.emit('make_move', moveNotation);
-    };
+    } , [])
 
-    const onPieceDrop = (args: PieceDropHandlerArgs) => {
-        if (!args.targetSquare) return false;
+    const handleChessPieceMove = (moveMade : string ) => {
+        socket.emit('make_move' , moveMade)
+    }
 
-        try {
-            const move = chessGame.move({
-                from: args.sourceSquare,
-                to: args.targetSquare,
-                promotion: 'q',
-            });
-
-            if (!move) return false;
-
-            setChessPosition(chessGame.fen());
-            setMoves(prevMoves => [...prevMoves, move.san]);
-            handleChessPieceMove(move.san);
+    const handleRandomMove = () => {
+        const newFen = generateRandomMoveFen(chessGame.fen())
+        if (newFen) {
+            chessGame.move(newFen);
+            setChessPosition(newFen)
             return true;
-        } catch (error) {
-            console.log(`Move failed: ${error}`);
+        }else{
+            console.log('the random move funtioin failed teribly')
             return false;
         }
-    };
+    }
 
-    const canDragPiece = ({ piece }: { piece: string }) => {
-        return piece.startsWith(boardOrientation[0]);
-    };
+    function onPieceDrop ( {sourceSquare , targetSquare} : PieceDropHandlerArgs)  {
+        if (!targetSquare) {
+            return false;
+        }
 
-    const PlayerInfo = ({ name, isConnected }: { name: string, isConnected: boolean }) => (
-        <div className="flex items-center justify-between p-4 bg-chess-cards rounded-lg">
-            <p className="font-semibold text-white">{name}</p>
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-        </div>
-    );
+        try {
+            chessGame.move({
+                from : sourceSquare , 
+                to : targetSquare , 
+                promotion : 'q',
+            })
 
-    const GameControls = () => (
-        <div className="bg-chess-navs p-4 rounded-lg space-y-4">
-            <div className="flex items-center justify-between text-white">
-                <h3 className="font-bold">Game Controls</h3>
-                <p>Status: {isConnected ? <span className="text-green-500">Connected</span> : <span className="text-red-500">Disconnected</span>}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setBoardOrientation(boardOrientation === 'white' ? 'black' : 'white')} className="p-2 bg-chess-icons-orange rounded-lg text-black font-semibold">Flip Board</button>
-                <button className="p-2 bg-gray-600 rounded-lg text-white font-semibold">Resign</button>
-            </div>
-        </div>
-    );
+            setChessPosition(chessGame.fen())
+            try {
+                // we need to send the game state via the internet
+                console.log('the handleChessPieceMove functoin has been called')
+                handleChessPieceMove(chessGame.fen())
+                console.log('the move has been sent over the internet to the opponent ')
+            } catch (error) {
+                console.log('an error occured trying to talk to the sio server' , error)
+            }
+            return true;
 
-    const MoveHistory = () => (
-        <div className="bg-chess-navs p-4 rounded-lg flex-grow">
-            <h3 className="font-bold text-white mb-2">Move History</h3>
-            <div className="bg-chess-cards p-2 rounded-md h-48 overflow-y-auto text-white">
-                {moves.length === 0 ? (
-                    <p className="text-gray-400">No moves yet.</p>
-                ) : (
-                    <ol className="list-decimal list-inside grid grid-cols-2 gap-x-4">
-                        {moves.map((move, index) => <li key={index}>{move}</li>)}
-                    </ol>
-                )}
-            </div>
-        </div>
-    );
+        } catch (error) {
+            console.log(`an error occured ${error}`)
+            return false;
+        }
+    }
+
+    function canDragPieceWhite({piece} : PieceHandlerArgs) {
+        return piece.pieceType[0] === 'w';
+      }
+
+    function canDragPieceBlack ({piece} : PieceHandlerArgs) {
+        return piece.pieceType[0] === 'b';
+    }
+
+    const whiteChessboardOptions = {
+        onPieceDrop ,
+        canDragPiece : canDragPieceWhite,
+        boardOrientation : 'white' as const,
+        position : chessPosition,
+        id : 'mulitplayer-white'
+    }
+
+    const blackChessboardOptions = {
+        onPieceDrop ,
+        canDragPiece : canDragPieceBlack,
+        boardOrientation : 'black' as const,
+        position : chessPosition,
+        id : 'mulitplayer-black'
+    }
+
+    const handlePlayAsClick = () => {
+        console.log('the play as button has been clicked')
+        setPlayAsWhite(!playAsWhite)
+    }
 
     return (
-        <div className="min-h-screen bg-chess-aesthetic-bg-brown p-4">
-            <div className="container mx-auto">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="w-full md:w-2/3 flex items-center justify-center">
-                        <Chessboard
-                            onPieceDrop={onPieceDrop}
-                            canDragPiece={canDragPiece}
-                            boardOrientation={boardOrientation}
-                            position={chessPosition}
-                            id="two-player-chessboard"
-                        />
-                    </div>
-                    <div className="w-full md:w-1/3 flex flex-col gap-4">
-                        <PlayerInfo name="Player 1 (You)" isConnected={isConnected} />
-                        <PlayerInfo name="Player 2 (Opponent)" isConnected={isConnected} />
-                        <GameControls />
-                        <MoveHistory />
-                    </div>
-                </div>
+        <div className="p-2 flex flex-col gap-2">
+            <div>
+                <button 
+                onClick={handlePlayAsClick}
+                className = "p-2 border bg-chess-icons-orange rounded-lg border-chess-icons-orange text-shadow-chess-aesthetic-bg-brown">
+                    {playAsWhite ? (
+                        'play as black'
+                    ) : (
+                        'play as white'
+                    ) }
+                </button>
+                <p>status : {isConnectd ? 
+                (<span className="text-green-500 font-bold">connected</span>) :
+                 (<span className="text-red-500 font-bold">not connected</span>)}</p>
             </div>
+            { playAsWhite ? (
+                <Chessboard options={whiteChessboardOptions} />
+            ) : (
+                <Chessboard options={blackChessboardOptions} />
+            )}
         </div>
-    );
+    )
 }

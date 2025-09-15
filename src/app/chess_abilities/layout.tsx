@@ -6,8 +6,8 @@ export default function ChessAbilitiesLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="container mx-auto p-4">
+    <div className="min-h-screen w-full">
+      <main className="w-full">
         {children}
       </main>
     </div>
